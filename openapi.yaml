@@ -1,0 +1,815 @@
+openapi: "3.0.2"
+
+info:
+  title: Unicompex Map API
+  description: |
+    RESTful API Центра управления ледовой обстановкой (ЦУЛО).
+    Картографическая проекция по умолчанию: EPSG:4326 ([lon, lat]), градусы с десятичной дробью, float. В JSON достаточно 5 знаков после точки.
+    Все расстояния — в метрах. Время: Unix-time в миллисекундах (13 разрядов).
+  version: "1.7.1"
+
+servers:
+  - url: http://api.udev.su/{version}
+    description: API-сервер и версия API (текущая — v1)
+    variables:
+      version:
+        default: v1
+
+paths:
+  # Devices
+  /devices:
+    get:
+      operationId: DeviceGetList
+      description: Получение списка устройств (позже будут добавлены фильтры)
+      responses:
+        "200":
+          $ref: "#/components/responses/DeviceList"
+    post:
+      operationId: DeviceCreate
+      description: Создание нового устройства
+      requestBody:
+        $ref: "#/components/requestBodies/DeviceCreate"
+      responses:
+        "200":
+          $ref: "#/components/responses/Device"
+
+  /devices/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: DeviceGet
+      description: Получение объекта устройства по его ID
+      responses:
+        "200":
+          $ref: "#/components/responses/Device"
+    patch:
+      operationId: DeviceModify
+      description: Обновление устройства (часть полей)
+      requestBody:
+        $ref: "#/components/requestBodies/DeviceModify"
+      responses:
+        "200":
+          $ref: "#/components/responses/Device"
+
+  /devices/{id}/bind:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: DeviceBindingModify
+      description: Обновление привязки устройства
+      requestBody:
+        $ref: "#/components/requestBodies/DeviceBindObject"
+      responses:
+        "200":
+          description: Привязка успешно изменена
+
+  /devices/{id}/events:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: DeviceEventGetList
+      description: Получение списка событий устройства
+      responses:
+        "200":
+          $ref: "#/components/responses/DeviceEventList"
+    post:
+      operationId: DeviceEventCreate
+      description: Добавление события к устройству
+      requestBody:
+        $ref: "#/components/requestBodies/DeviceEventCreate"
+      responses:
+        "200":
+          description: Успешно создано событие
+
+  /devices/{id}/command/{command}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/DeviceCommand"
+    post:
+      description: Отправка команд для действий над устройством; тела запроса и ответа — пустые
+      responses:
+        "200":
+          description: Успешное выполнение команды
+  ###
+
+  # IceFormations
+  /ice-formations:
+    get:
+      operationId: IceFormationGetList
+      description: Получение списка ледяных образований (фильтры будут добавлены позже)
+      responses:
+        "200":
+          $ref: "#/components/responses/IceFormationList"
+    post:
+      operationId: IceFormationCreate
+      description: Создание нового ледяного образования
+      requestBody:
+        $ref: "#/components/requestBodies/IceFormationCreate"
+      responses:
+        "200":
+          $ref: "#/components/responses/IceFormation"
+
+  /ice-formations/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: IceFormationGet
+      description: Получение объекта ледяного образования по его ID
+      responses:
+        "200":
+          $ref: "#/components/responses/IceFormation"
+    patch:
+      operationId: IceFormationModify
+      description: Обновление ледяного образования (часть полей)
+      requestBody:
+        $ref: "#/components/requestBodies/IceFormationModify"
+      responses:
+        "200":
+          $ref: "#/components/responses/IceFormation"
+  ###
+
+  # Vessels
+  /vessels:
+    get:
+      operationId: VesselGetList
+      description: Получение списка судов
+      responses:
+        "200":
+          $ref: "#/components/responses/VesselList"
+    post:
+      operationId: VesselCreate
+      description: Создание нового судна
+      requestBody:
+        $ref: "#/components/requestBodies/VesselCreate"
+      responses:
+        "200":
+          $ref: "#/components/responses/Vessel"
+
+  /vessels/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: VesselGet
+      description: Получение объекта судна по его ID
+      responses:
+        "200":
+          $ref: "#/components/responses/Vessel"
+    patch:
+      operationId: VesselModify
+      description: Обновление судна (часть полей)
+      requestBody:
+        $ref: "#/components/requestBodies/VesselModify"
+      responses:
+        "200":
+          $ref: "#/components/responses/Vessel"
+  ###
+
+  # Notifications
+  /notifications:
+    get:
+      operationId: NotificationGetList
+      description: Получение списка уведомлений
+      responses:
+        "200":
+          $ref: "#/components/responses/NotificationList"
+    post:
+      operationId: NotificationCreate
+      description: Создание нового уведомления (эндпоинт доступен только для отладки)
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreate"
+      responses:
+        "200":
+          $ref: "#/components/responses/Notification"
+
+  /notifications/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: NotificationGet
+      description: Получение уведомления по его ID
+      responses:
+        "200":
+          $ref: "#/components/responses/Notification"
+    patch:
+      operationId: NotificationModify
+      description: Обновление уведомления (только поле isRead, но для отладки можно менять любые поля)
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationModify"
+      responses:
+        "200":
+          $ref: "#/components/responses/Notification"
+  ###
+
+components:
+  schemas:
+    # Devicе: схемы для API
+    Device:
+      description: Полный объект устройства, возвращаемый из API
+      allOf:
+        - $ref: "#/components/schemas/DeviceBaseWritable"
+        - $ref: "#/components/schemas/DeviceBaseReadOnly"
+
+    DeviceCreate:
+      description: Объект для создания устройства (без id и read-only полей)
+      allOf:
+        - $ref: "#/components/schemas/DeviceBaseWritable"
+        - type: object
+          required:
+            - type
+            - status
+
+    DeviceModify:
+      description: Объект для изменения устройства
+      anyOf:
+        - $ref: "#/components/schemas/DeviceBaseWritable"
+
+    # Device, базовые схемы
+    DeviceBaseWritable:
+      description: Редактируемые поля устройства
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/DeviceType"
+        status:
+          description: Статус устройства
+          type: string
+          enum:
+            - avaliable
+            - unavaliable
+            - activation
+            - writed-off
+            - active
+        activationStatus:
+          description: Статус активации устройства (только для Device.status == active, в противном случае null)
+          type: string
+          nullable: true
+          enum:
+            - start
+            - test
+            - test-1
+            - test-2
+            - test-ok
+            - bind-start
+            - bind
+
+    DeviceBaseReadOnly:
+      description: Read-only-поля устройства
+      type: object
+      required:
+        - id
+        - type
+        - status
+        - meta
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        bindObjectType:
+          $ref: "#/components/schemas/BindObjectType"
+          nullable: true
+        bindObject:
+          $ref: "#/components/schemas/BindObject"
+          nullable: true
+        location:
+          $ref: "#/components/schemas/Location"
+          nullable: true
+        track:
+          $ref: "#/components/schemas/Track"
+          nullable: true
+        distance:
+          description: Расстояние до центра зоны безопасности в метрах (зона безопасности текущего пользователя, выбранная им как основная)
+          type: number
+          nullable: true
+        meta:
+          $ref: "#/components/schemas/DeviceMeta"
+
+    DeviceMeta:
+      description: Дополнительные данные устройства и его датчиков
+      type: object
+      properties:
+        technicalStatus:
+          type: string
+          nullable: true
+          description: Технический статус устройства
+        batteryLevel:
+          type: number
+          nullable: true
+          description: Уровень заряда батареи устройства
+        installationTime:
+          type: integer
+          format: int64
+          nullable: true
+          description: Время установки устройства в миллисекундах
+        transmissionErrors:
+          type: string
+          nullable: true
+          description: Ошибки передачи данных устройства
+        temperature:
+          type: number
+          nullable: true
+          description: Температура в местоположении устройства
+        humidity:
+          type: number
+          nullable: true
+          description: Влажность в местоположении устройства
+        wind:
+          type: number
+          nullable: true
+          description: Скорость ветра в местоположении устройства
+
+    # Device: дополнительные схемы
+    DeviceType:
+      description: Тип устройства, буй АПАРД или метеостанция АРМЭ
+      type: string
+      enum:
+        - apard
+        - arme
+
+    DeviceBindObject:
+      description: Объект для редактирования привязки устройства
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/BindObjectType"
+        id:
+          description: Id ледяного образования или судна
+          $ref: "#/components/schemas/Id"
+
+    DeviceEvent:
+      description: Событие устройства
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        message:
+          type: string
+          description: Текст с описанием события
+        coordinates:
+          $ref: "#/components/schemas/Coordinates"
+          description: Координаты события
+
+    # IceFormation: схемы, используемые в API
+    IceFormation:
+      description: Полный объект ледяного образования, возвращаемый из API
+      allOf:
+        - $ref: "#/components/schemas/IceFormationBaseWritable"
+        - $ref: "#/components/schemas/IceFormationBaseReadOnly"
+        - type: object
+          properties:
+            device:
+              $ref: "#/components/schemas/DeviceShort"
+              nullable: true
+
+    IceFormationCreate:
+      description: Объект для создания ледяного образования
+      $ref: "#/components/schemas/IceFormationBaseWritable"
+
+    IceFormationModify:
+      description: Объект для изменения ледяного образования
+      $ref: "#/components/schemas/IceFormationBaseWritable"
+
+    # IceFormation: базовые схемы
+    IceFormationBaseWritable:
+      description: Редактируемые поля ледяного образования
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/IceFormationType"
+          nullable: true
+        comment:
+          description: Комментарий к ледяному образованию
+          type: string
+          nullable: true
+        size:
+          description: Размер ледяного образования (ключевое слово или число)
+          nullable: true
+          oneOf:
+            - type: string
+              description: Размер ледяного образования (маленький, средний, большой)
+              enum:
+                - small
+                - medium
+                - large
+            - type: number
+              description: Размер ледяного образования в метрах
+        track:
+          $ref: "#/components/schemas/TrackPolygon"
+
+    IceFormationBaseReadOnly:
+      description: Read-only-поля ледяного образования
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        image:
+          description: Ссылка на изображение ледяного образования, относительно корня API-сервера
+          type: string
+          nullable: true
+
+    IceFormationType:
+      description: Тип ледяного образования
+      type: string
+      nullable: true
+      enum:
+        - hummock
+        - iceberg
+        - iceberg-piece
+        - ice-field
+        - ice-pack
+        - ice-other
+
+    # Vessel: схемы, используемые в API
+    Vessel:
+      description: Объект судна (или буровой платформы), возвращаемый из API
+      allOf:
+        - $ref: "#/components/schemas/DeviceBaseWritable"
+        - $ref: "#/components/schemas/DeviceBaseReadOnly"
+        - device:
+          $ref: "#/components/schemas/DeviceShort"
+          nullable: true
+
+    VesselCreate:
+      description: Объект для создания устройства
+      $ref: "#/components/schemas/VesselBaseWritable"
+
+    VesselModify:
+      description: Объект для изменения устройства
+      $ref: "#/components/schemas/VesselBaseWritable"
+
+    # Vessel: базовые схемы
+    VesselBaseWritable:
+      description: Редактируемые поля судна
+      type: object
+      properties:
+        classification:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        charterer:
+          type: string
+        imo:
+          type: string
+        mmsi:
+          type: string
+        captainName:
+          type: string
+        comment:
+          type: string
+
+    VesselBaseReadOnly:
+      description: Read-only-поля судна
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+
+    # Notification: схемы, используемые в API
+    Notification:
+      description: Объект уведомления, получаемый из API
+      type: object
+      required:
+        - id
+        - timestamp
+        - message
+        - isRead
+        - meta
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        message:
+          type: string
+        isRead:
+          type: boolean
+        source:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - UserGroup
+                - SafetyZone
+            id:
+              $ref: "#/components/schemas/Id"
+        meta:
+          type: object
+          properties:
+            device:
+              $ref: "#/components/schemas/DeviceInNotification"
+              nullable: true
+            location:
+              $ref: "#/components/schemas/Location"
+              nullable: true
+
+    NotificationCreate:
+      description: Объект для создания уведомления (любые поля, кроме id)
+      $ref: "#/components/schemas/Notification"
+
+    NotificationModify:
+      description: Объект для изменения статуса уведомления
+      type: object
+      required:
+        - isRead
+      properties:
+        isRead:
+          type: boolean
+
+    # Короткие схемы объектов для переиспользования
+    DeviceShort:
+      description: Устройство внутри IceFormation, Vessel и Notification
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        type:
+          $ref: "#/components/schemas/DeviceType"
+        location:
+          $ref: "#/components/schemas/Location"
+
+    BindObjectType:
+      description: Тип привязанного объекта (ледяное образование или судно)
+      type: string
+      enum:
+        - IceFormation
+        - Vessel
+
+    BindObject:
+      description: Привязанный к устройству объект (IceFormation или Vessel)
+      oneOf:
+        - allOf:
+            - $ref: "#/components/schemas/IceFormationBaseWritable"
+            - $ref: "#/components/schemas/IceFormationBaseReadOnly"
+        - allOf:
+            - $ref: "#/components/schemas/VesselBaseWritable"
+            - $ref: "#/components/schemas/VesselBaseReadOnly"
+
+    IceFormationShort:
+      description: Связанный с устройством объект (ледяное образование), самое короткое представление
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        type:
+          $ref: "#/components/schemas/IceFormationType"
+
+    DeviceInNotification:
+      description: Поля устройства, используемые в Notification
+      allOf:
+        - $ref: "#/components/schemas/DeviceShort"
+        - type: object
+          properties:
+            bindObjectType:
+              type: string
+              enum:
+                - IceFormation
+        - $ref: "#/components/schemas/IceFormationShort"
+
+    # Дополнительные схемы
+    Id:
+      description: Уникальный идентификатор, Primary key сущности
+      type: string
+      example: 1337
+
+    Timestamp:
+      description: Время формате Unix-time, в миллисекундах (13 десятичных разрядов)
+      type: integer
+      format: int64
+      example: 1721898000000
+
+    Coordinates:
+      description: Географические координаты точки, долгота и широта
+      type: array
+      items:
+        type: number
+        format: float32
+        minimum: -180.0
+        maximum: 180.0
+      minItems: 2
+      maxItems: 2
+      example: [59.04156, 70.65105]
+
+    Location:
+      description: Локация (координаты точки и время)
+      type: object
+      properties:
+        coordinates:
+          $ref: "#/components/schemas/Coordinates"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+
+    Track:
+      description: Трек, отсортированная по времени последовательность локаций
+      type: array
+      items:
+        $ref: "#/components/schemas/Location"
+
+    CoordinatesPolygon:
+      description: Географические координаты полигона, массив из координат точек
+      type: array
+      minItems: 3
+      items:
+        type: array
+        items:
+          $ref: "#/components/schemas/Coordinates"
+      example:
+        [
+          [59.04156, 70.65105],
+          [59.17352, 70.65971],
+          [59.26293, 70.61106],
+          [59.10703, 70.59964],
+          [58.97406, 70.61943],
+        ]
+
+    LocationPolygon:
+      description: Локация-полигон (координаты вершин и время)
+      type: object
+      properties:
+        coordinates:
+          $ref: "#/components/schemas/CoordinatesPolygon"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+
+    TrackPolygon:
+      description: Трек полигона, отсортированная по времени последовательность локаций полигона
+      type: array
+      items:
+        $ref: "#/components/schemas/LocationPolygon"
+
+  requestBodies:
+    DeviceCreate:
+      description: Создание устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeviceCreate"
+    DeviceModify:
+      description: Сохранение изменённого устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeviceModify"
+    DeviceBindObject:
+      description: Изменение привязки устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeviceBindObject"
+    DeviceEventCreate:
+      description: Создание события устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeviceEvent"
+    DeviceEventModify:
+      description: Сохранение изменённого устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeviceEvent"
+
+    IceFormationCreate:
+      description: Создание ледяного образования
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IceFormationCreate"
+    IceFormationModify:
+      description: Сохранение изменённого ледяного образования
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IceFormationModify"
+
+    VesselCreate:
+      description: Создание судна
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VesselCreate"
+    VesselModify:
+      description: Сохранение изменённого судна
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VesselModify"
+
+    NotificationCreate:
+      description: Создание уведомления
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreate"
+
+    NotificationModify:
+      description: Сохранение изменённого уведомления
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationModify"
+
+  parameters:
+    Id:
+      name: id
+      description: ID сущности
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Id"
+    DeviceCommand:
+      name: command
+      description: Команда управления устройством
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - activation-start
+          - activation-confirm
+          - activation-cancel
+          - bind-start
+          - install-confirm
+          - deactivate
+          - write-off
+
+  responses:
+    Device:
+      description: Объект устройства
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Device"
+    DeviceList:
+      description: Массив устройств
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Device"
+    DeviceEventList:
+      description: Массив событий устройства
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/DeviceEvent"
+
+    IceFormation:
+      description: Объект ледяного образования
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IceFormation"
+    IceFormationList:
+      description: Массив ледяных образований
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/IceFormation"
+
+    Vessel:
+      description: Объект судна
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Vessel"
+    VesselList:
+      description: Массив судов
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Vessel"
+
+    Notification:
+      description: Объект судна
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Notification"
+    NotificationList:
+      description: Массив судов
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Notification"
